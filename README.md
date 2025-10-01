@@ -1,99 +1,175 @@
 # Real-time Remote Toxic Gas Monitoring System
 
-## 📖 Overview
+## 1. Introduction & Vision
 
-[cite_start]This project is a robust, IoT-based system for real-time remote monitoring of toxic gases and air quality in hazardous environments like mines and chemical plants[cite: 223]. [cite_start]The system is designed to be a scalable, cost-effective, and reliable solution to enhance workforce safety and environmental oversight[cite: 232]. [cite_start]It leverages long-range wireless communication (LoRa) to transmit data from sensor nodes to a central gateway, which then relays the information to an interactive web-based dashboard for live monitoring and instant alerts[cite: 228, 230, 231].
+### 1.1. Problem Statement
 
-[cite_start]The project emphasizes a professional engineering approach, moving from a basic prototype to a deployment-ready product by incorporating high-precision sensors, robust hardware design, efficient firmware, and a feature-rich user interface[cite: 4, 15].
+Industrial environments such as manufacturing plants, chemical facilities, and mines present significant occupational safety risks. The presence of toxic gases (e.g., CO, NO2), the potential for combustible gas leaks (CH4), and poor ambient air quality (high CO2, high PM2.5) can lead to severe health hazards for workers and catastrophic safety incidents. Existing monitoring solutions are often prohibitively expensive, difficult to deploy across large or RF-challenging areas, and lack intelligent, context-aware alerting capabilities.
 
-## ✨ Key Features
+### 1.2. Vision
 
-- **Multi-Gas Detection**: Accurately measures concentrations of critical gases:
-    - [cite_start]Carbon Dioxide (CO2) [cite: 227]
-    - [cite_start]Carbon Monoxide (CO) [cite: 227]
-    - [cite_start]Sulfur Dioxide (SO2) [cite: 227]
-    - [cite_start]Nitrogen Dioxide (NO2) [cite: 227]
-    - [cite_start]Methane (CH4) [cite: 227]
-- [cite_start]**High-Precision Sensing**: Utilizes a hybrid sensor strategy for maximum reliability, featuring NDIR sensors for CO2 and industrial-grade electrochemical sensors for toxic gases (CO, SO2, NO2)[cite: 30, 34, 35].
-- [cite_start]**Long-Range Communication**: Employs LoRa technology (SX1278 module) to ensure stable data transmission over long distances in challenging industrial environments[cite: 228, 237].
-- **Real-time Web Dashboard**: An interactive front-end application that visualizes data with:
-    - [cite_start]Live data gauges for at-a-glance readings[cite: 185].
-    - [cite_start]Historical data charts for trend analysis using Chart.js[cite: 184].
-    - [cite_start]A geospatial map (Leaflet.js) showing the status and location of each sensor node[cite: 188].
-- [cite_start]**Instant Alerts**: The system automatically sends alerts when gas concentrations exceed predefined safety thresholds based on official Vietnamese environmental standards (QCVN 05:2013/BTNMT)[cite: 231, 141, 143].
-- [cite_start]**Energy Efficient**: Designed for field deployment with smart power management, including support for solar charging and leveraging the ESP32's Deep Sleep mode to maximize battery life[cite: 83, 97].
+To engineer a robust, scalable, and cost-effective IoT solution for comprehensive occupational safety and environmental monitoring in industrial settings. This project aims to design, build, and validate an end-to-end system capable of real-time data acquisition, long-range wireless transmission, and intelligent analysis of critical atmospheric hazards.
 
-## 🛠️ Technology Stack
+## 2. System Architecture
 
-### Hardware
-- [cite_start]**Microcontroller**: ESP32 [cite: 228]
-- [cite_start]**Communication**: LoRa Module (SX1278, 433MHz) [cite: 237, 69]
-- **Sensors**:
-    - [cite_start]**CO2**: MH-Z19B (NDIR) [cite: 30]
-    - [cite_start]**CO, SO2, NO2**: High-precision Electrochemical Sensors [cite: 34]
-    - [cite_start]**CH4**: MQ-4 Sensor [cite: 37]
-- [cite_start]**Power**: Li-ion Battery with TP4056 Solar Charging Circuit and Load Sharing [cite: 85, 88]
+The system is designed with a two-tier architecture consisting of distributed Sensor Nodes and a central Gateway.
 
-### Firmware
-- [cite_start]**Development Environment**: Visual Studio Code + PlatformIO [cite: 107]
-- **Framework**: Arduino
-- **Key Libraries**:
-    - [cite_start]`RadioLib` for robust LoRa communication[cite: 117].
-    - [cite_start]`PubSubClient` for MQTT communication at the gateway[cite: 175].
-    - [cite_start]`ArduinoOTA` for over-the-air firmware updates on the gateway[cite: 155].
-- [cite_start]**Version Control**: Git & GitHub [cite: 109]
+1.  **Sensor Node:**
+    *   **Function:** Deployed at critical locations to acquire data from a suite of sensors. It processes this data and transmits it wirelessly via LoRa.
+    *   **Characteristics:** Designed for low-power operation, enabling long-term deployment on battery power, supported by deep-sleep cycles.
 
-### Software & Cloud
-- [cite_start]**Communication Protocol**: MQTT [cite: 168]
-- [cite_start]**MQTT Broker**: HiveMQ (for development) [cite: 174]
-- [cite_start]**Dashboard**: Custom Web Application (HTML, CSS, JavaScript) [cite: 178]
-- **Frontend Libraries**:
-    - [cite_start]Chart.js [cite: 184]
-    - [cite_start]Gauge.js [cite: 185]
-    - [cite_start]Leaflet.js [cite: 188]
-    - [cite_start]Paho.js (MQTT over WebSockets) [cite: 182]
-- [cite_start]**Hosting**: GitHub Pages [cite: 179]
+2.  **Gateway:**
+    *   **Function:** Acts as a bridge between the LoRa network and the internet. It receives data packets from all Sensor Nodes, decodes them, and forwards the information to a cloud-based MQTT broker via Wi-Fi.
+    *   **Characteristics:** Assumed to have a stable power source and internet connectivity, typically located in a central control room or office.
 
-## 🏗️ System Architecture
+### 2.1. Data Flow
 
-The system consists of two main components:
+Sensor Data -> Sensor Node (ESP32) -> LoRa Transmission -> Gateway (ESP32) -> Wi-Fi -> MQTT Broker -> Web Dashboard & AI Model
 
-1.  **Sensor Nodes**: Deployed at remote locations. [cite_start]Each node reads data from its sensors, packs it into an efficient binary format (C struct), and transmits it periodically via LoRa[cite: 119, 132]. [cite_start]The ESP32's deep sleep mode is used between transmissions to conserve power[cite: 97].
+## 3. Key Features
 
-2.  [cite_start]**Gateway & Dashboard**: A central gateway (also an ESP32) continuously listens for LoRa packets[cite: 169]. [cite_start]Upon receiving data, it connects to a local WiFi network, publishes the sensor readings to an MQTT broker, and enables OTA updates[cite: 154, 167, 168, 171]. [cite_start]The web dashboard subscribes to the MQTT topics via WebSockets to display the data in real-time to the end-user[cite: 181].
+- **Multi-Parameter Sensing:** Concurrent monitoring of Carbon Monoxide (CO), Nitrogen Dioxide (NO2), Methane (CH4), Carbon Dioxide (CO2), and Particulate Matter (PM2.5).
+- **Long-Range Communication:** Implementation of the LoRa protocol for robust data transmission in large-scale industrial environments where Wi-Fi is unreliable or unavailable.
+- **Real-time Visualization:** A web-based dashboard featuring live data gauges, historical trend charts, and a geospatial map of node locations and statuses.
+- **Intelligent Alerting:** An automated, multi-level alert system based on both static thresholds and dynamic, AI-adjusted parameters.
+- **Power Efficiency:** A low-power design for Sensor Nodes, utilizing deep-sleep modes to maximize operational longevity on battery power.
 
-## 🚀 Getting Started
+## 4. Hardware Selection
 
-### Prerequisites
-- [VS Code](https://code.visualstudio.com/) with the [PlatformIO IDE extension](https://platformio.org/) installed.
-- Git installed on your local machine.
+Hardware selection is based on a **Hybrid Sensor Strategy**, choosing the most appropriate technology for each specific measurement to balance accuracy, reliability, and cost.
 
-### Installation & Setup
+### 4.1. Core Components
 
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/your-username/your-repository-name.git](https://github.com/your-username/your-repository-name.git)
-    cd your-repository-name
-    ```
+*   **Microcontroller**
+    *   **Selection:** ESP32 DevKit V1
+    *   **Rationale:** A powerful dual-core MCU with integrated Wi-Fi and Bluetooth, extensive community support, and cost-effectiveness.
 
-2.  **Open the project in VS Code:**
-    - Open VS Code and click on `File > Open Folder...` and select the cloned repository folder.
-    - PlatformIO will automatically detect the `platformio.ini` file and install the required libraries and dependencies.
+*   **LoRa Module**
+    *   **Selection:** SX1278 (433MHz)
+    *   **Rationale:** A widely-used LoRa transceiver providing reliable long-range, low-power communication. The 433MHz frequency is suitable for IoT applications in Asia.
 
-3.  **Configure the Firmware:**
-    - In the `src` folder, configure your WiFi credentials, MQTT broker details, and LoRa parameters.
+### 4.2. Sensor Suite & Rationale
 
-4.  **Build and Upload:**
-    - Connect your ESP32 board via USB.
-    - Use the PlatformIO toolbar to **Build** and **Upload** the firmware to the Sensor Node and Gateway devices.
+#### Ventilation & Health - Carbon Dioxide (CO2)
 
-### Usage
-- Once the Gateway is running and connected to WiFi, it will start forwarding data.
-- Open the `index.html` file from the `dashboard` folder in your browser to view the live monitoring dashboard. For best results, host the dashboard folder on a web server or use GitHub Pages.
+*   **Selected Sensor:** MH-Z19C
+*   **Technology:** NDIR (Non-Dispersive Infrared)
+*   **Purpose:** Monitors ventilation quality to ensure worker health and alertness. High CO2 levels indicate stagnant air, leading to fatigue and reduced productivity.
+*   **Technical Analysis:** Uses NDIR technology, which measures CO2 concentration based on the absorption of a specific infrared wavelength. This method is highly selective, accurate, stable over time, and provides a direct digital output (UART), simplifying integration.
 
-## 📈 Future Development
+#### Toxic Gas - Carbon Monoxide (CO)
 
-- [ ] [cite_start]Expand the sensor network with more nodes[cite: 241].
-- [ ] [cite_start]Implement AI/ML algorithms for predictive analysis and risk forecasting[cite: 261, 268].
-- [ ] [cite_start]Develop a mobile application for on-the-go monitoring and alerts[cite: 276].
-- [ ] Further optimize power consumption for long-term, maintenance-free operation.
+*   **Selected Sensor:** DFRobot Fermion MEMS CO
+*   **Technology:** MEMS (Micro-Electro-Mechanical Systems)
+*   **Purpose:** Provides critical alerts for acute poisoning risks from incomplete combustion processes (e.g., boilers, engines). CO is a colorless, odorless, and highly toxic gas.
+*   **Technical Analysis:** This pre-calibrated module with a standard I2C interface eliminates the complex hardware and software overhead associated with traditional MOS sensors like the MQ-7, which require a dual-voltage heating cycle.
+
+#### Toxic Exhaust - Nitrogen Dioxide (NO2)
+
+*   **Selected Sensor:** DFRobot Fermion MEMS NO2
+*   **Technology:** MEMS
+*   **Purpose:** Monitors toxic nitrogen dioxide emissions, primarily from diesel engines (e.g., forklifts, generators) in enclosed or poorly ventilated areas. NO2 is a severe respiratory irritant.
+*   **Technical Analysis:** Similar to the CO sensor, this pre-calibrated I2C module simplifies integration and ensures reliable qualitative measurements, allowing the project to focus on system-level features.
+
+#### Combustible Gas - Methane (CH4)
+
+*   **Selected Sensor:** MQ-4
+*   **Technology:** MOS (Metal Oxide Semiconductor)
+*   **Purpose:** Detects methane/natural gas leaks to prevent fire and explosion hazards. The primary goal is leak detection rather than precise low-level concentration measurement.
+*   **Technical Analysis:** Employs a MOS sensing element optimized for high sensitivity to Methane (CH4). While it exhibits cross-sensitivity to other combustible gases, this is acceptable in a safety context, as any detection of flammable gas warrants an alert. Its low cost and high availability make it a practical choice.
+
+#### Particulate Pollution - PM2.5
+
+*   **Selected Sensor:** Plantower PMS5003
+*   **Technology:** Laser Scattering
+*   **Purpose:** Monitors fine particulate matter generated from industrial processes (e.g., cutting, grinding, welding), which poses a long-term respiratory health risk to workers.
+*   **Technical Analysis:** Operates on the principle of laser scattering. An internal algorithm calculates the concentration of PM1.0, PM2.5, and PM10 particles. It provides reliable, real-time data via a UART interface.
+
+## 5. Technology Stack
+
+*   **Sensing Layer**
+    *   **Component:** Distributed Sensor Nodes
+    *   **Technology:** MCU: ESP32 DevKit V1; Sensors: MH-Z19C (NDIR), DFRobot Fermion MEMS (CO, NO2), MQ-4 (MOS), Plantower PMS5003 (Laser)
+
+*   **Communication Layer**
+    *   **Component:** Node-to-Gateway
+    *   **Technology:** Protocol: LoRa; Hardware: SX1278 Transceiver Module (433MHz); Library: RadioLib
+    *   **Component:** Gateway-to-Cloud
+    *   **Technology:** Protocols: Wi-Fi, MQTT; Hardware: ESP32 DevKit V1; Library: PubSubClient
+
+*   **Application Layer**
+    *   **Component:** Cloud & Data Brokerage
+    *   **Technology:** Broker: Public MQTT Broker (e.g., HiveMQ); Hosting: GitHub Pages
+    *   **Component:** Frontend / Visualization
+    *   **Technology:** Framework: HTML, CSS, JavaScript; Libraries: MQTT.js, Chart.js, Gauge.js, Leaflet.js
+
+*   **Intelligence Layer**
+    *   **Component:** AI / Machine Learning
+    *   **Technology:** Frameworks: Python with TensorFlow or scikit-learn; Deployment: Cloud-based inference or Edge deployment on Gateway (advanced).
+
+## 6. Project Milestones
+
+- **Phase 0: Foundation & Planning**
+  - Finalize system requirements and architecture.
+  - Set up development environments (VS Code + PlatformIO) and Git repository.
+  - Complete component sourcing and inspection.
+
+- **Phase 1: Prototyping & Firmware Development**
+  - Assemble the complete system on a breadboard.
+  - Develop and test firmware for the Sensor Node and Gateway.
+  - Validate the end-to-end data flow from sensor to MQTT broker.
+
+- **Phase 2: Hardware Design & Fabrication**
+  - Design a modular motherboard PCB in Altium Designer.
+  - Generate manufacturing files (Gerber & NC Drill).
+  - Procure and assemble the custom PCB.
+
+- **Phase 3: Dashboard Development**
+  - Implement the frontend UI/UX.
+  - Integrate real-time data visualization widgets.
+  - Deploy the web application to GitHub Pages.
+
+- **Phase 4: AI Model Development & Integration**
+  - Collect a baseline time-series dataset.
+  - Train and evaluate an initial machine learning model.
+  - Integrate the model's inference logic into the system.
+
+- **Phase 5: System Integration, Testing & Optimization**
+  - Assemble the final PCB-based hardware.
+  - Conduct full-system testing (LoRa range, battery life, sensor accuracy, AI model performance).
+  - Optimize firmware for power consumption and reliability.
+
+- **Phase 6: Finalization & Reporting**
+  - Design and 3D print a custom enclosure for the Sensor Node.
+  - Complete the final thesis report.
+  - Prepare for the final project defense.
+
+## 7. Success Criteria (KPIs)
+
+- **Connectivity:** Achieve stable LoRa communication at a defined target distance within a mixed industrial environment.
+- **Latency:** Maintain an end-to-end data latency (from sensor reading to dashboard update) below a specified threshold (e.g., <10 seconds).
+- **Power Efficiency:** The Sensor Node must achieve a target operational duration on a single battery charge.
+- **Data Accuracy:** Sensor readings must be validated and fall within the manufacturers' specified tolerance.
+- **Intelligence:** The AI model must demonstrate the ability to adjust alert thresholds or provide predictive insights.
+
+## 8. Risks & Mitigation
+
+*   **Risk: Component Sourcing Delays**
+    *   **Probability:** Medium
+    *   **Impact:** Medium
+    *   **Mitigation:** Prioritize suppliers with confirmed stock in Hanoi. Order all critical components at the beginning of Phase 1.
+
+*   **Risk: Technical Complexity**
+    *   **Probability:** High
+    *   **Impact:** High
+    *   **Mitigation:** Adopt a modular, iterative development process. Test each subsystem independently before integration.
+
+*   **Risk: Insufficient Data for AI Training**
+    *   **Probability:** Medium
+    *   **Impact:** High
+    *   **Mitigation:** Start data collection as soon as the prototype is stable. If necessary, augment the dataset with simulated data or define a simpler, rule-based initial model.
+
+*   **Risk: RF Interference in Industrial Environment**
+    *   **Probability:** Medium
+    *   **Impact:** Medium
+    *   **Mitigation:** Implement robust error-checking (CRC) in the LoRa communication protocol. Select optimal LoRa parameters (Spreading Factor, Bandwidth) for the target environment during testing.
